@@ -55,6 +55,7 @@ dependencies:
   retry: ^3.1.0
   uuid: ^3.0.6
   paging_view: ^0.0.2
+  flutter_webrtc: ^0.9.8
 dev_dependencies:
   flutter_test:
     sdk: flutter

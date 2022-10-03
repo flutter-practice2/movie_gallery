@@ -18,24 +18,29 @@ import 'package:typed_data/typed_data.dart' as typed;
 
 @singleton
 class MyMqttClient {
-  SharedPreferences prefs;
-  ChatMessageRepository chatMessageRepository;
-  MqttClient? client;
-  final Lock lock = Lock();
-  final uuid = Uuid();
+  static late MyMqttClient _instance;
+  SharedPreferences _prefs;
+  ChatMessageRepository _chatMessageRepository;
+  MqttClient? _client;
+  final Lock _lock = Lock();
+  final _uuid = Uuid();
   StreamController<ChatMessageEntity> streamController =
       StreamController.broadcast();
 
   StreamSubscription? messageSubscription;
 
-  MyMqttClient(this.prefs, this.chatMessageRepository);
+  MyMqttClient(this._prefs, this._chatMessageRepository) {
+    _instance = this;
+  }
+
+  static MyMqttClient get instance => _instance;
 
   Future<bool> connect() async {
     if (isConnected()) {
       print('mqtt_try_connect');
       return true;
     }
-    return lock.synchronized(() async {
+    return _lock.synchronized(() async {
       if (isConnected()) {
         return true;
       }
@@ -59,9 +64,9 @@ class MyMqttClient {
     if (isConnected()) {
       return true;
     }
-    int uid = prefs.getInt(Constants.PREFS_LOGIN_ID)!;
+    int uid = _prefs.getInt(Constants.PREFS_LOGIN_ID)!;
 
-    MqttClient mqttClient = MqttServerClient('socialme.hopto.org', uuid.v4());
+    MqttClient mqttClient = MqttServerClient('socialme.hopto.org', _uuid.v4());
     // mqttClient.logging(on: true);
     mqttClient.onConnected = onConnected;
     mqttClient.onAutoReconnect = onAutoReconnect;
@@ -78,9 +83,9 @@ class MyMqttClient {
     mqttClient.connectionMessage = MqttConnectMessage();
 
     try {
-      MqttClientConnectionStatus? connectionStatus=  await mqttClient.connect();
+      MqttClientConnectionStatus? connectionStatus = await mqttClient.connect();
       print('mqtt_connect_status: ${connectionStatus}');
-      if(connectionStatus!.state !=MqttConnectionState.connected){
+      if (connectionStatus!.state != MqttConnectionState.connected) {
         throw Exception('mqtt_connect_state is not connected');
       }
     } catch (e, s) {
@@ -88,13 +93,12 @@ class MyMqttClient {
       throw e;
     }
 
-
     if (messageSubscription != null) {
       messageSubscription!.cancel();
     }
-    if (this.client != null) {
+    if (this._client != null) {
       try {
-        this.client!.disconnect();
+        this._client!.disconnect();
       } catch (e) {
         print(e);
       }
@@ -103,14 +107,14 @@ class MyMqttClient {
     mqttClient.subscribe("u/$uid", MqttQos.exactlyOnce);
     messageSubscription = mqttClient.updates!.listen(onMessage);
 
-    this.client = mqttClient;
+    this._client = mqttClient;
     print('mqtt_create_client');
     return true;
   }
 
   bool isConnected() {
-    return client != null &&
-        client!.connectionStatus!.state == MqttConnectionState.connected;
+    return _client != null &&
+        _client!.connectionStatus!.state == MqttConnectionState.connected;
   }
 
   void publishMessage(ChatPostMsg chatPostMsg) async {
@@ -128,7 +132,7 @@ class MyMqttClient {
           // .addUTF8String(jsonStr)
           .addBuffer(buffer)
           .payload!;
-      client!.publishMessage(topic, MqttQos.exactlyOnce, payload);
+      _client!.publishMessage(topic, MqttQos.exactlyOnce, payload);
     } else {
       print('mqtt_publishing_message_is_dropped: $chatPostMsg');
     }
@@ -147,7 +151,7 @@ class MyMqttClient {
         uid: chatPostMsg.uid,
         chatId: chatPostMsg.uid,
         message: chatPostMsg.content);
-    chatMessageRepository.insert(entity);
+    _chatMessageRepository.insert(entity);
 
     streamController.add(entity);
   }
