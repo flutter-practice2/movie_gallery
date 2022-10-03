@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'HomePage.dart';
+import 'chat/video/DecideWidget.dart';
+import 'chat/video/VidoWidget.dart';
 import 'inject/injection.dart';
 import 'login/LoginNotifier.dart';
 import 'login/LoginWidget.dart';
@@ -15,12 +17,14 @@ final GoRouter router = GoRouter(routes: [
   GoRoute(
     path: '/',
     builder: (context, state) {
-      int currentIndex= int.parse(state.queryParams['currentIndex']??'0');
+      int currentIndex = int.parse(state.queryParams['currentIndex'] ?? '0');
 
       return Consumer<LoginNotifier>(
         builder: (context, notifier, child) {
           int? uid = Provider.of<LoginNotifier>(context).loginId;
-          return uid != null ? HomePage(currentIndex:currentIndex) : LoginWidget();
+          return uid != null
+              ? HomePage(currentIndex: currentIndex)
+              : LoginWidget();
           // return HomePage();
         },
       );
@@ -45,5 +49,24 @@ final GoRouter router = GoRouter(routes: [
       print('receive_imagePath:$imagePath');
       return DisplayPictureScreen(imagePath);
     },
-  )
+  ),
+  GoRoute(
+    path: '/VideoWidget',
+    builder: (context, state) {
+      int loginId = int.parse(state.queryParams['loginId']!);
+      int peerId = int.parse(state.queryParams['peerId']!);
+      return VideoWidget(
+        loginId: loginId,
+        peerId: peerId,
+      );
+    },
+  ),
+  GoRoute(path: '/DecideWidget',builder: (context, state) {
+    int loginId = int.parse(state.queryParams['loginId']!);
+    int peerId = int.parse(state.queryParams['peerId']!);
+    return DecideWidget(
+       loginId,
+       peerId,
+    );
+  },)
 ]);

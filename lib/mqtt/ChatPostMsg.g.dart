@@ -7,7 +7,7 @@ part of 'ChatPostMsg.dart';
 // **************************************************************************
 
 ChatPostMsg _$ChatPostMsgFromJson(Map<String, dynamic> json) => ChatPostMsg(
-      type: json['type'] as String? ?? MsgType.TYPE_CHAT,
+      type: json['type'] as String? ?? MsgType.CHAT,
       uid: json['uid'] as int,
       peerUid: json['peerUid'] as int,
       content: json['content'] as String,

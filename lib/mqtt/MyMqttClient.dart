@@ -15,6 +15,7 @@ import 'package:uuid/uuid.dart';
 import '../repository/entity/ChatMessageEntity.dart';
 import 'ChatPostMsg.dart';
 import 'package:typed_data/typed_data.dart' as typed;
+import 'MsgType.dart';
 
 @singleton
 class MyMqttClient {
@@ -24,10 +25,14 @@ class MyMqttClient {
   MqttClient? _client;
   final Lock _lock = Lock();
   final _uuid = Uuid();
-  StreamController<ChatMessageEntity> streamController =
+  StreamController<ChatMessageEntity> chatStreamController =
       StreamController.broadcast();
+  StreamController<ChatPostMsg> signalStreamController =
+  StreamController.broadcast();
+  StreamController<ChatPostMsg> roomStreamController =
+  StreamController.broadcast();
 
-  StreamSubscription? messageSubscription;
+  StreamSubscription? mqttSubscription;
 
   MyMqttClient(this._prefs, this._chatMessageRepository) {
     _instance = this;
@@ -93,8 +98,8 @@ class MyMqttClient {
       throw e;
     }
 
-    if (messageSubscription != null) {
-      messageSubscription!.cancel();
+    if (mqttSubscription != null) {
+      mqttSubscription!.cancel();
     }
     if (this._client != null) {
       try {
@@ -105,7 +110,7 @@ class MyMqttClient {
     }
 
     mqttClient.subscribe("u/$uid", MqttQos.exactlyOnce);
-    messageSubscription = mqttClient.updates!.listen(onMessage);
+    mqttSubscription = mqttClient.updates!.listen(onMessage);
 
     this._client = mqttClient;
     print('mqtt_create_client');
@@ -147,13 +152,20 @@ class MyMqttClient {
     Map<String, dynamic> map = json.decode(payload);
     ChatPostMsg chatPostMsg = ChatPostMsg.fromJson(map);
 
-    ChatMessageEntity entity = ChatMessageEntity(
-        uid: chatPostMsg.uid,
-        chatId: chatPostMsg.uid,
-        message: chatPostMsg.content);
-    _chatMessageRepository.insert(entity);
+    if(chatPostMsg.type==MsgType.CHAT) {
 
-    streamController.add(entity);
+      ChatMessageEntity entity = ChatMessageEntity(
+          uid: chatPostMsg.uid,
+          chatId: chatPostMsg.uid,
+          message: chatPostMsg.content);
+      _chatMessageRepository.insert(entity);
+
+      chatStreamController.add(entity);
+    }else if(chatPostMsg.type==MsgType.SIGNAL) {
+      signalStreamController.add(chatPostMsg);
+    }else if(chatPostMsg.type==MsgType.ROOM) {
+      roomStreamController.add(chatPostMsg);
+    }
   }
 
   static typed.Uint8Buffer utf8StringToUinit8buffer(String message) {

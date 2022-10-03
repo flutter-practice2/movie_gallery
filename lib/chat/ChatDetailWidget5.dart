@@ -78,7 +78,7 @@ class ChatDetailWidgetState extends State<ChatDetailWidget> {
       });
 
       subscription =
-          mqttClient.streamController.stream.listen((ChatMessageEntity entity) {
+          mqttClient.chatStreamController.stream.listen((ChatMessageEntity entity) {
         if (entity.uid == this.peerId) {
           this.incrDbPagingOffset();
           this.prependFromDb2();

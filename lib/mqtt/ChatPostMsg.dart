@@ -1,11 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
-
+import 'MsgType.dart';
 part 'ChatPostMsg.g.dart';
 
-class MsgType {
-  static const String TYPE_CHAT = 'chat';
-  static const String TYPE_SIGNAL = 'signal';
-}
 
 @JsonSerializable()
 class ChatPostMsg {
@@ -25,7 +21,7 @@ class ChatPostMsg {
   }
 
   ChatPostMsg({
-    this.type: MsgType.TYPE_CHAT,
+    this.type: MsgType.CHAT,
     required this.uid,
     required this.peerUid,
     required this.content,
