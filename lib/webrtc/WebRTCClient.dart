@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:movie_gallery/mqtt/ChatPostMsg.dart';
 import 'package:movie_gallery/mqtt/MyMqttClient.dart';
@@ -159,8 +158,10 @@ class WebRTCClient {
     for (var track in localStream.getTracks()) {
        await track.stop();
     }
-    for (var track in _remoteRenderer.srcObject!.getTracks()) {
-      await track.stop();
+    if( _remoteRenderer.srcObject!=null) {
+      for (var track in _remoteRenderer.srcObject!.getTracks()) {
+        await track.stop();
+      }
     }
     _remoteRenderer.dispose();
     _localRenderer.dispose();
