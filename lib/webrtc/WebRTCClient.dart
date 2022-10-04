@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:html';
 
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:movie_gallery/mqtt/ChatPostMsg.dart';
@@ -42,10 +41,9 @@ class WebRTCClient {
   int _peerId;
   late RTCPeerConnection peerConnection;
   late RTCIceCandidate candidate;
+  late MediaStream localStream;
 
   Future start() async {
-    await init();
-
     await candidate;
     _sendIceCandidate(candidate);
     await _sendOffer();
@@ -55,8 +53,7 @@ class WebRTCClient {
     await _localRenderer.initialize();
     await _remoteRenderer.initialize();
 
-    MediaStream localStream =
-        await navigator.mediaDevices.getUserMedia(mediaConstraints);
+    localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
     _localRenderer.srcObject = localStream;
 
     peerConnection = await createPeerConnection({
@@ -64,7 +61,7 @@ class WebRTCClient {
       ...{'sdpSemantics': sdpSemantics}
     }, _config);
     for (var track in localStream.getTracks()) {
-      peerConnection.addTrack(track);
+     await peerConnection.addTrack(track,localStream);
     }
 
     peerConnection.onTrack = (event) {
@@ -77,7 +74,7 @@ class WebRTCClient {
     };
   }
 
-  void onMessage(ChatPostMsg chatPostMsg) async {
+  void onSignalMessage(ChatPostMsg chatPostMsg) async {
     Map<String, dynamic> map = json.decode(chatPostMsg.content);
     Map<String, dynamic> data = map['data'];
     switch (map['type']) {
@@ -99,7 +96,15 @@ class WebRTCClient {
 
         break;
     }
+  }
 
+  void switchCamera() {
+    Helper.switchCamera(localStream.getVideoTracks()[0]);
+  }
+
+  void alterMic() {
+    localStream.getAudioTracks()[0].enabled =
+        !localStream.getAudioTracks()[0].enabled;
   }
 
   Future<void> _sendAnswer() async {
@@ -150,9 +155,17 @@ class WebRTCClient {
     MyMqttClient.instance.publishMessage(chatPostMsg);
   }
 
-  void dispose() {
+  void dispose()async {
+    for (var track in localStream.getTracks()) {
+       await track.stop();
+    }
+    for (var track in _remoteRenderer.srcObject!.getTracks()) {
+      await track.stop();
+    }
     _remoteRenderer.dispose();
     _localRenderer.dispose();
+    peerConnection.dispose();
+
   }
 
   RTCVideoRenderer get localRenderer => _localRenderer;

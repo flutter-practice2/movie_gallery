@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:movie_gallery/chat/video/VidoWidget.dart';
 import 'package:movie_gallery/inject/injection.dart';
 import 'package:movie_gallery/repository/entity/ChatMessageEntity.dart';
 import '../mqtt/ChatPostMsg.dart';
@@ -61,8 +62,7 @@ class _ImeWidgetState extends State<ImeWidget> {
         alignment: Alignment.center,
         child: IconButton(
             onPressed: () {
-              //todo
-
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => VideoWidget(loginId: state.loginId, peerId: state.peerId),));
               setState(() {
                 this.showPallet = false;
               });
