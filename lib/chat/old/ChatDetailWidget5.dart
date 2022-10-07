@@ -3,16 +3,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:movie_gallery/Constants.dart';
+import 'package:movie_gallery/chat/old/ImeWidget5.dart';
 import 'package:movie_gallery/inject/injection.dart';
 import 'package:movie_gallery/login/LoginNotifier.dart';
 import 'package:movie_gallery/repository/entity/entity.dart';
 import 'package:movie_gallery/widget/Avatar.dart';
 import 'package:paging_view/paging_view.dart';
 
-import '../mqtt/MyMqttClient.dart';
-import '../repository/ChatMessageRepository.dart';
-import '../repository/UserRepository.dart';
-import 'ImeWidget5.dart';
+import 'package:movie_gallery/mqtt/MyMqttClient.dart';
+import 'package:movie_gallery/repository/ChatMessageRepository.dart';
+import 'package:movie_gallery/repository/UserRepository.dart';
 
 class ChatDetailWidget extends StatefulWidget {
   late int peerId;

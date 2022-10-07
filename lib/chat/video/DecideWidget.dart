@@ -12,8 +12,11 @@ class DecideWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return Container(
+      color: Colors.white,
+      alignment: Alignment.center,
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           TextButton(
               onPressed: () {

@@ -10,12 +10,13 @@ import '../../webrtc/WebRTCClient.dart';
 class VideoWidget extends StatefulWidget {
   int _loginId;
   int _peerId;
+  bool isCaller;
 
-  VideoWidget({
-    required int loginId,
-    required int peerId,
-  })  : _loginId = loginId,
-        _peerId = peerId;
+  VideoWidget(
+      {required int loginId, required int peerId, required bool isCaller})
+      : _loginId = loginId,
+        _peerId = peerId,
+        this.isCaller = isCaller;
 
   @override
   State<VideoWidget> createState() => _VideoWidgetState(
@@ -40,37 +41,51 @@ class _VideoWidgetState extends State<VideoWidget> {
   })  : _loginId = loginId,
         _peerId = peerId {
     webRTCClient = WebRTCClient(loginId: _loginId, peerId: _peerId);
+    RoomClient.roomUiCallback = roomUiCallback;
+    WebRTCListener.onSignalMessage = webRTCClient.onSignalMessage;
   }
 
   @override
   void initState() {
     super.initState();
-    RoomClient.roomUiCallback = onRoomMessage;
 
     webRTCClient.init().then((value) {
-      WebRTCListener.signalOnMessage = webRTCClient.onSignalMessage;
-      roomClient.sendInvite(_loginId, _peerId);
+      if (widget.isCaller) {
+        roomClient.sendInvite(_loginId, _peerId);
+      } else {
+        setState(() {
+          print('webrtc_isConnected');
+          isConnected = true;
+        });
+        roomClient.sendAgree(_loginId, _peerId);
+      }
       setState(() {
         eglRenderInitialized = true;
       });
+      print('webrtc_inited');
     });
   }
 
-  void onRoomMessage(String type) {
+  void roomUiCallback(String type) {
+    print('webrtc_roomUiCallback:$type');
     switch (type) {
       case RoomType.AGREE:
-        webRTCClient.start();
-        setState(() {
-          isConnected = true;
-        });
+        webRTCClient.start().then((value) {
+          setState(() {
+            print('webrtc_isConnected');
+            isConnected = true;
+          });
+        })
+        ;
+
         break;
       case RoomType.REJECT:
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('rejected')));
-        hangUp();
+        hangUp(false);
         break;
       case RoomType.BYE:
-        hangUp();
+        hangUp(false);
         break;
     }
   }
@@ -86,15 +101,24 @@ class _VideoWidgetState extends State<VideoWidget> {
     });
   }
 
-  void hangUp() {
+  void hangUp(bool isFromSelf) {
+    if (isFromSelf) {
+      roomClient.sendBye(_loginId, _peerId);
+    }
     Navigator.pop(context);
     close();
   }
 
   void close() {
-    WebRTCListener.signalOnMessage = null;
+    WebRTCListener.onSignalMessage = null;
     webRTCClient.dispose();
     RoomClient.roomUiCallback = null;
+  }
+
+  @override
+  void dispose() {
+    close();
+    super.dispose();
   }
 
   @override
@@ -102,31 +126,33 @@ class _VideoWidgetState extends State<VideoWidget> {
     return SafeArea(
       child: Column(
         children: [
-          !eglRenderInitialized
-              ? SizedBox.shrink()
-              : Expanded(
-                child: Stack(
-                    children: [
-                      Align(
-                          alignment: Alignment.center,
-                          child: Container(
-                            height: MediaQuery.of(context).size.height,
-                            width: MediaQuery.of(context).size.width,
-                            child: RTCVideoView(webRTCClient.remoteRenderer),
-                          )),
-                      Align(
-                          alignment: Alignment.topRight,
-                          child: Container(
-                            width: 90,
-                            height: 120,
-                            child: RTCVideoView(
-                              webRTCClient.localRenderer,
-                              mirror: true,
-                            ),
-                          ))
-                    ],
-                  ),
-              ),
+          Expanded(
+            child: Stack(
+              children: [
+                !isConnected
+                    ? SizedBox.shrink()
+                    : Align(
+                        alignment: Alignment.center,
+                        child: Container(
+                          height: MediaQuery.of(context).size.height,
+                          width: MediaQuery.of(context).size.width,
+                          child: RTCVideoView(webRTCClient.remoteRenderer),
+                        )),
+                !eglRenderInitialized
+                    ? SizedBox.shrink()
+                    : Align(
+                        alignment: Alignment.topRight,
+                        child: Container(
+                          width: 90,
+                          height: 120,
+                          child: RTCVideoView(
+                            webRTCClient.localRenderer,
+                            mirror: true,
+                          ),
+                        ))
+              ],
+            ),
+          ),
           Container(
             alignment: Alignment.center,
             height: 100,
@@ -144,7 +170,7 @@ class _VideoWidgetState extends State<VideoWidget> {
                 FloatingActionButton(
                   heroTag: 'hangUp',
                   onPressed: () {
-                    hangUp();
+                    hangUp(true);
                   },
                   backgroundColor: Colors.pink,
                   child: Icon(Icons.call_end),

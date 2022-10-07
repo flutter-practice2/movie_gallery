@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:movie_gallery/inject/injection.dart';
 import 'package:movie_gallery/repository/entity/ChatMessageEntity.dart';
-import '../repository/ChatMessageRepository.dart';
+import '../../repository/ChatMessageRepository.dart';
 
 class ImeWidget extends StatefulWidget {
   final int loginId;

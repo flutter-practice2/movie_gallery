@@ -1,14 +1,12 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:movie_gallery/chat/old/ImeWidget.dart';
 import 'package:movie_gallery/inject/injection.dart';
 import 'package:movie_gallery/login/LoginNotifier.dart';
 import 'package:movie_gallery/repository/entity/entity.dart';
 import 'package:movie_gallery/widget/Avatar.dart';
 
-import '../repository/ChatMessageRepository.dart';
-import '../repository/UserRepository.dart';
-import 'ImeWidget.dart';
+import '../../repository/ChatMessageRepository.dart';
+import '../../repository/UserRepository.dart';
 
 /**
  * use StreamBuilder. the persistence library floor do not support single item emition

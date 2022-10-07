@@ -11,7 +11,8 @@ class RoomListener{
 
   RoomListener(this._mqttClient, this._roomClient){
     _mqttClient.roomStreamController.stream.listen((event) {
-      _roomClient.onMessage(event);
+      print('webrtc_roomStream:$event');
+      _roomClient.onRoomMessage(event);
     });
   }
 }

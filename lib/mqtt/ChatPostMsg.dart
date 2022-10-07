@@ -21,7 +21,7 @@ class ChatPostMsg {
   }
 
   ChatPostMsg({
-    this.type: MsgType.CHAT,
+    required this.type,
     required this.uid,
     required this.peerUid,
     required this.content,

@@ -18,7 +18,8 @@ class RoomClient {
 
   RoomClient(this._mqttClient);
 
-  void onMessage(ChatPostMsg event) async {
+  void onRoomMessage(ChatPostMsg event) async {
+    print('webrtc_onRoomMessage:$event');
     Map<String, dynamic> map = json.decode(event.content);
     Map<String, dynamic> data = map['data'];
     String type = map['type'];
@@ -26,16 +27,15 @@ class RoomClient {
       case RoomType.INVITE:
         int loginId = data['peerId'];
         int peerId = data['loginId'];
-        bool? accept = await Navigator.of(ContextUtil.context)
+        bool accept = (await Navigator.of(ContextUtil.context)
             .push<bool>(MaterialPageRoute<bool>(
           builder: (context) {
             return DecideWidget(loginId, peerId);
           },
-        ));
-        if (accept!) {
+        )))!;
+        if (accept) {
           GoRouter.of(ContextUtil.context)
-              .go('/VideoWidget?loginId=$loginId&peerId=$peerId');
-          sendAgree(loginId, peerId);
+              .go('/VideoWidget?loginId=$loginId&peerId=$peerId&isCaller=false');
         } else {
           sendReject(loginId, peerId);
         }
@@ -43,11 +43,15 @@ class RoomClient {
 
       case RoomType.AGREE:
       case RoomType.REJECT:
-        if (roomUiCallback != null) {
-          roomUiCallback ?? (type);
-        }
+
         break;
     }
+    if (roomUiCallback != null) {
+      roomUiCallback!.call(type);
+    }else{
+      print('roomUiCallback is null');
+    }
+
   }
 
   void sendReject(int loginId, int peerId) {
@@ -57,6 +61,10 @@ class RoomClient {
 
   void sendAgree(int loginId, int peerId) {
     String roomType = RoomType.AGREE;
+    _sendRoomMessage(roomType, loginId, peerId);
+  }
+  void sendBye(int loginId, int peerId) {
+    String roomType = RoomType.BYE;
     _sendRoomMessage(roomType, loginId, peerId);
   }
 

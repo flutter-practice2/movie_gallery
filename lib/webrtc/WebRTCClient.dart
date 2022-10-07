@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:movie_gallery/mqtt/ChatPostMsg.dart';
@@ -21,15 +22,15 @@ class WebRTCClient {
       'optional': [],
     }
   };
-  Map<String, dynamic> _iceServers = {
+
+  Map<String, dynamic> pcConfiguration = {
     'iceServers': [
       {'url': 'stun:socialme.hopto.org:3478'},
-    ]
+    ],
+    'sdpSemantics': 'unified-plan'
   };
 
-  String get sdpSemantics => 'unified-plan';
-
-  final Map<String, dynamic> _config = {
+  final Map<String, dynamic> pcConstraints = {
     'mandatory': {},
     'optional': [
       {'DtlsSrtpKeyAgreement': true},
@@ -39,28 +40,26 @@ class WebRTCClient {
   int _loginId;
   int _peerId;
   late RTCPeerConnection peerConnection;
-  late RTCIceCandidate candidate;
   late MediaStream localStream;
+  Completer<bool> candidateCompleter = new Completer();
 
   Future start() async {
-    await candidate;
-    _sendIceCandidate(candidate);
+    print('webrtc_start');
     await _sendOffer();
+
   }
 
   Future init() async {
+    print('webrtc_init');
     await _localRenderer.initialize();
     await _remoteRenderer.initialize();
 
     localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
     _localRenderer.srcObject = localStream;
 
-    peerConnection = await createPeerConnection({
-      ..._iceServers,
-      ...{'sdpSemantics': sdpSemantics}
-    }, _config);
+    peerConnection = await createPeerConnection(pcConfiguration, pcConstraints);
     for (var track in localStream.getTracks()) {
-     await peerConnection.addTrack(track,localStream);
+      await peerConnection.addTrack(track, localStream);
     }
 
     peerConnection.onTrack = (event) {
@@ -68,12 +67,22 @@ class WebRTCClient {
         _remoteRenderer.srcObject = event.streams[0];
       }
     };
+
     peerConnection.onIceCandidate = (candidate) {
-      this.candidate = candidate;
+      print('webrtc_onIceCandidate:$candidate');
+      if(candidate.candidate!=null) {
+        // this.candidate = candidate;
+        peerConnection.addCandidate(candidate);
+        // candidateCompleter.complete(true);
+        _sendIceCandidate(candidate);
+      }
+
     };
+
   }
 
   void onSignalMessage(ChatPostMsg chatPostMsg) async {
+    print('webrtc_onSignalMessage:$chatPostMsg');
     Map<String, dynamic> map = json.decode(chatPostMsg.content);
     Map<String, dynamic> data = map['data'];
     switch (map['type']) {
@@ -89,6 +98,7 @@ class WebRTCClient {
 
         break;
       case SignalType.candidate:
+        print('webrtc_receive_candidate');
         RTCIceCandidate candidate = RTCIceCandidate(
             data['candidate'], data['sdpMid'], data['sdpMLineIndex']);
         peerConnection.addCandidate(candidate);
@@ -107,6 +117,7 @@ class WebRTCClient {
   }
 
   Future<void> _sendAnswer() async {
+    print('webrtc_sendAnswer');
     RTCSessionDescription localSessionDesc =
         await peerConnection.createAnswer();
     peerConnection.setLocalDescription(localSessionDesc);
@@ -122,7 +133,9 @@ class WebRTCClient {
     MyMqttClient.instance.publishMessage(chatPostMsg);
   }
 
-  void _sendIceCandidate(RTCIceCandidate candidate) {
+  Future _sendIceCandidate(RTCIceCandidate candidate) async {
+    print('webrtc_sendIceCandidate_wait');
+    // await candidateCompleter.future;
     Map<String, dynamic> iceMap = {
       'type': SignalType.candidate,
       'data': {
@@ -137,9 +150,11 @@ class WebRTCClient {
         peerUid: _peerId,
         content: json.encode(iceMap));
     MyMqttClient.instance.publishMessage(chatPostMsg);
+    print('webrtc_sendIceCandidate_done');
   }
 
   Future<void> _sendOffer() async {
+    print('webrtc_sendOffer');
     RTCSessionDescription localSessionDesc = await peerConnection.createOffer();
     peerConnection.setLocalDescription(localSessionDesc);
     Map<String, dynamic> offerMap = {
@@ -154,11 +169,11 @@ class WebRTCClient {
     MyMqttClient.instance.publishMessage(chatPostMsg);
   }
 
-  void dispose()async {
+  void dispose() async {
     for (var track in localStream.getTracks()) {
-       await track.stop();
+      await track.stop();
     }
-    if( _remoteRenderer.srcObject!=null) {
+    if (_remoteRenderer.srcObject != null) {
       for (var track in _remoteRenderer.srcObject!.getTracks()) {
         await track.stop();
       }
@@ -166,7 +181,6 @@ class WebRTCClient {
     _remoteRenderer.dispose();
     _localRenderer.dispose();
     peerConnection.dispose();
-
   }
 
   RTCVideoRenderer get localRenderer => _localRenderer;

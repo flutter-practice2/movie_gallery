@@ -6,8 +6,8 @@ import 'package:movie_gallery/login/LoginNotifier.dart';
 import 'package:movie_gallery/repository/entity/entity.dart';
 import 'package:movie_gallery/widget/Avatar.dart';
 
-import '../repository/ChatMessageRepository.dart';
-import '../repository/UserRepository.dart';
+import '../../repository/ChatMessageRepository.dart';
+import '../../repository/UserRepository.dart';
 import 'ImeWidget3.dart';
 
 class ChatDetailWidget extends StatefulWidget {

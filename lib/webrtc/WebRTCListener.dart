@@ -6,14 +6,14 @@ import '../mqtt/MyMqttClient.dart';
 @singleton
 class WebRTCListener {
   MyMqttClient _mqttClient;
-  static Function(ChatPostMsg)? signalOnMessage;
+  static Function(ChatPostMsg)? onSignalMessage;
 
   WebRTCListener(this._mqttClient) {
     _mqttClient.signalStreamController.stream.listen((ChatPostMsg event) {
-      print('message_in:$event');
+      print('webrtc_signalStream:$event');
 
-      if(signalOnMessage!=null) {
-        signalOnMessage ?? (event);
+      if(onSignalMessage!=null) {
+        onSignalMessage!.call(event);
       }
     });
   }

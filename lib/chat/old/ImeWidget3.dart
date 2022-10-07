@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:movie_gallery/inject/injection.dart';
 import 'package:movie_gallery/repository/entity/ChatMessageEntity.dart';
-import '../mqtt/ChatPostMsg.dart';
-import '../mqtt/MyMqttClient.dart';
-import '../repository/ChatMessageRepository.dart';
-import './ChatDetailWidget5.dart';
+import '../../mqtt/ChatPostMsg.dart';
+import '../../mqtt/MsgType.dart';
+import '../../mqtt/MyMqttClient.dart';
+import '../../repository/ChatMessageRepository.dart';
+import 'ChatDetailWidget3.dart';
 
 class ImeWidget extends StatefulWidget {
   ChatDetailWidgetState state;
@@ -68,13 +69,23 @@ class _ImeWidgetState extends State<ImeWidget> {
                           uid: state.loginId,
                           message: content);
                       this.chatMessageRepository.insert(entity).then((value) {
-                        // state.prepend([entity]);
-                        state.incrDbPagingOffset();
-                        state.prependFromDb2();
+                        bool atBottom = state.isAtBottom();
+                        print('current_is_at_bottom:$atBottom');
 
                         // send message to peer
-                        sendMessageToPeer(content);
+                        // sendMessageToPeer();
+                        ChatPostMsg chatPostMsg = ChatPostMsg(
+                            type: MsgType.CHAT,
+                            uid: state.loginId,
+                            peerUid: state.peerId,
+                            content: content);
+                        mqttClient.publishMessage(chatPostMsg);
 
+                        if (atBottom) {
+                          state.refresh();
+                        }else{
+                          state.incrOffset();
+                        }
                       });
                     }
 
@@ -96,13 +107,12 @@ class _ImeWidgetState extends State<ImeWidget> {
     );
   }
 
-  void sendMessageToPeer(String content) {
-     ChatPostMsg chatPostMsg = ChatPostMsg(
+  void sendMessageToPeer() {
+    ChatPostMsg chatPostMsg = ChatPostMsg(
+        type: MsgType.CHAT,
         uid: state.loginId,
         peerUid: state.peerId,
-        content: content);
+        content: this.text!);
     mqttClient.publishMessage(chatPostMsg);
   }
-
-
 }

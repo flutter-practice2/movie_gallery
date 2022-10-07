@@ -54,7 +54,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      key:ContextUtil.appKey,
       providers: [
         Provider<MyClient>(
           create: (context) => myClient,
@@ -65,7 +64,8 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp.router(
         routerConfig: router,
-        
+        debugShowCheckedModeBanner:false,
+
       ),
     );
   }

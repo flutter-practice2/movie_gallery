@@ -3,6 +3,7 @@ import 'package:movie_gallery/chat/video/VidoWidget.dart';
 import 'package:movie_gallery/inject/injection.dart';
 import 'package:movie_gallery/repository/entity/ChatMessageEntity.dart';
 import '../mqtt/ChatPostMsg.dart';
+import '../mqtt/MsgType.dart';
 import '../mqtt/MyMqttClient.dart';
 import '../repository/ChatMessageRepository.dart';
 import './ChatDetailWidget6.dart';
@@ -62,7 +63,8 @@ class _ImeWidgetState extends State<ImeWidget> {
         alignment: Alignment.center,
         child: IconButton(
             onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (context) => VideoWidget(loginId: state.loginId, peerId: state.peerId),));
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => VideoWidget(loginId: state.loginId, peerId: state.peerId
+              ,isCaller: true,),));
               setState(() {
                 this.showPallet = false;
               });
@@ -124,7 +126,7 @@ class _ImeWidgetState extends State<ImeWidget> {
   }
 
   void sendMessageToPeer(String content) {
-    ChatPostMsg chatPostMsg = ChatPostMsg(
+    ChatPostMsg chatPostMsg = ChatPostMsg(type: MsgType.CHAT,
         uid: state.loginId, peerUid: state.peerId, content: content);
     mqttClient.publishMessage(chatPostMsg);
   }
