@@ -120,13 +120,12 @@ class _$AppDatabase extends AppDatabase {
 
 class _$ChatDao extends ChatDao {
   _$ChatDao(this.database, this.changeListener)
-      : _queryAdapter = QueryAdapter(database, changeListener),
+      : _queryAdapter = QueryAdapter(database),
         _chatEntityInsertionAdapter = InsertionAdapter(
             database,
             'chat',
             (ChatEntity item) =>
-                <String, Object?>{'id': item.id, 'unread': item.unread},
-            changeListener);
+                <String, Object?>{'id': item.id, 'unread': item.unread});
 
   final sqflite.DatabaseExecutor database;
 
@@ -137,15 +136,13 @@ class _$ChatDao extends ChatDao {
   final InsertionAdapter<ChatEntity> _chatEntityInsertionAdapter;
 
   @override
-  Stream<List<ChatView>> findAll() {
-    return _queryAdapter.queryListStream('select * from chat_view',
+  Future<List<ChatView>> findAll() async {
+    return _queryAdapter.queryList('select * from chat_view',
         mapper: (Map<String, Object?> row) => ChatView(
             id: row['id'] as int,
             unread: row['unread'] as int?,
             nickname: row['nickname'] as String?,
-            avatar: row['avatar'] as String?),
-        queryableName: 'chat_view',
-        isView: true);
+            avatar: row['avatar'] as String?));
   }
 
   @override
@@ -235,8 +232,7 @@ class _$UserDao extends UserDao {
                   'uid': item.uid,
                   'nickname': item.nickname,
                   'avatar': item.avatar
-                },
-            changeListener);
+                });
 
   final sqflite.DatabaseExecutor database;
 

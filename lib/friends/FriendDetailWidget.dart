@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:movie_gallery/inject/injection.dart';
 import 'package:movie_gallery/repository/entity/ChatEntity.dart';
 
-import '../chat/old/ChatDetailWidget.dart';
+import '../chat/ChatDetailWidget6.dart';
 import '../http/model/export.dart';
 import '../repository/ChatRepository.dart';
 

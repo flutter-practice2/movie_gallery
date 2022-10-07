@@ -14,7 +14,7 @@ abstract class ChatDao {
   }
 
   @Query('select * from chat_view')
-  Stream<List<ChatView>> findAll();
+  Future<List<ChatView>> findAll();
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insert(ChatEntity entity);

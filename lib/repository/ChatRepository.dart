@@ -12,7 +12,7 @@ class ChatRepository {
   ChatRepository(this.chatDao);
 
 
-  Stream<List<ChatView>> findAll() {
+  Future<List<ChatView>> findAll() {
     return chatDao.findAll();
   }
 

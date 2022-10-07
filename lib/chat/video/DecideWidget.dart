@@ -18,7 +18,7 @@ class DecideWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          TextButton(
+          ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -26,7 +26,7 @@ class DecideWidget extends StatelessWidget {
           SizedBox(
             width: 10,
           ),
-          TextButton(
+          ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop(false);
 

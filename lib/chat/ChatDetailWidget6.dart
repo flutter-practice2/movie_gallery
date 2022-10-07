@@ -42,7 +42,8 @@ class ChatDetailWidgetState extends State<ChatDetailWidget> {
 
   PagingController<int, ChatMessageEntity> pagingController = PagingController(
       firstPageKey: Constants.DB_START_PAGE,
-      invisibleItemsThreshold: Constants.DB_PER_PAGE*2);
+      invisibleItemsThreshold: Constants.DB_PER_PAGE*2
+  );
 
   int dbPagingOffset = 0;
   int indexOffset = 0;
@@ -71,9 +72,11 @@ class ChatDetailWidgetState extends State<ChatDetailWidget> {
         List<ChatMessageEntity> entities = await chatMessageRepository
             .pageByChatId(peerId, dbPagingOffset, perPage);
         dbPagingOffset += entities.length;
-        int newestId = entities.first.id!;
-        if (newestId > this.dbLargeId) {
-          this.dbLargeId = newestId;
+        if(entities.length>0) {
+          int newestId = entities.first.id!;
+          if (newestId > this.dbLargeId) {
+            this.dbLargeId = newestId;
+          }
         }
 
         if (entities.length < perPage) {

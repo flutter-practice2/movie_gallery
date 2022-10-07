@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:injectable/injectable.dart';
 import 'package:movie_gallery/chat/video/DecideWidget.dart';
+import 'package:movie_gallery/chat/video/VidoWidget.dart';
 import 'package:movie_gallery/mqtt/ChatPostMsg.dart';
 import 'package:movie_gallery/mqtt/MsgType.dart';
 import 'package:movie_gallery/mqtt/MyMqttClient.dart';
@@ -34,8 +35,9 @@ class RoomClient {
           },
         )))!;
         if (accept) {
-          GoRouter.of(ContextUtil.context)
-              .go('/VideoWidget?loginId=$loginId&peerId=$peerId&isCaller=false');
+          Navigator.of(ContextUtil.context).push(MaterialPageRoute(builder: (context) {
+            return VideoWidget(loginId: loginId,peerId: peerId,isCaller: false,);
+          },));
         } else {
           sendReject(loginId, peerId);
         }

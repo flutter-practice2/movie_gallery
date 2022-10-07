@@ -1,7 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:movie_gallery/chat/ChatDetailWidget6.dart';
+import 'package:movie_gallery/http/model/export.dart';
 import 'package:movie_gallery/inject/injection.dart';
 import 'package:movie_gallery/repository/ChatRepository.dart';
 
@@ -14,65 +16,60 @@ class ChatListWidge extends StatefulWidget {
 
 class _ChatListWidgeState extends State<ChatListWidge> {
   ChatRepository chatRepository = getIt<ChatRepository>();
-  late Stream<List<ChatView>> stream;
+  PagingController<int,ChatView> pagingController=PagingController(firstPageKey: Constants.DB_START_PAGE);
 
   @override
   void initState() {
     super.initState();
-
-    stream = chatRepository.findAll();
+    pagingController.addPageRequestListener((pageKey)async {
+      List<ChatView> page= await chatRepository.findAll();
+      pagingController.appendLastPage(page);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.active) {
-          List<ChatView> items = snapshot.data!;
-          return SafeArea(
-              child: ListView.builder(
-            itemBuilder: (context, index) {
-              var item = items[index];
-              return Slidable(
-                endActionPane: ActionPane(
-                  motion: DrawerMotion(),
-                  children: [
-                    SlidableAction(
-                      onPressed: (context) {
-                        chatRepository.delete(item.id).then((value) {
-                          setState(() {});
-                        });
-                      },
-                      icon: Icons.delete,
-                    )
-                  ],
-                ),
-                child: Padding(
-                  padding: EdgeInsets.only(top: 8, left: 8),
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                // ChatDetailWidget(item.id),
-                            ChatDetailWidget(item.id),
-                          ));
-                    },
-                    child: this.buildChatTile(item, context),
-                  ),
-                ),
-              );
-            },
-            itemCount: items.length,
-          ));
-        }
-
-        return Container();
-      },
-      stream: stream,
-    );
+   return SafeArea(
+     child: PagedListView(
+        pagingController: pagingController,
+        builderDelegate: PagedChildBuilderDelegate<ChatView>(itemBuilder: (context, item, index) {
+          return Slidable(
+            endActionPane: ActionPane(
+              motion: DrawerMotion(),
+              children: [
+                SlidableAction(
+                  onPressed: (context) {
+                    chatRepository.delete(item.id).then((value) {
+                      pagingController.itemList;
+                      setState(() {
+                        pagingController.refresh();
+                      });
+                    });
+                  },
+                  icon: Icons.delete,
+                )
+              ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.only(top: 8, left: 8),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                        // ChatDetailWidget(item.id),
+                        ChatDetailWidget(item.id),
+                      ));
+                },
+                child: this.buildChatTile(item, context),
+              ),
+            ),
+          );
+        },),
+      ),
+   );
   }
 
   Row buildChatTile(ChatView item, BuildContext context) {

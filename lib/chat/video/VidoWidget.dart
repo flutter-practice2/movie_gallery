@@ -107,85 +107,87 @@ class _VideoWidgetState extends State<VideoWidget> {
       roomClient.sendBye(loginId, peerId);
     }
     Navigator.pop(context);
-    close();
   }
 
-  void close() {
-    webRTCClient.dispose();
-    RoomClient.roomUiCallback = null;
-  }
 
   @override
   void dispose() {
-    close();
+    webRTCClient.dispose();
+    RoomClient.roomUiCallback = null;
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Column(
-        children: [
-          Expanded(
-            child: Stack(
-              children: [
-                !connected
-                    ? SizedBox.shrink()
-                    : Align(
-                        alignment: Alignment.center,
-                        child: Container(
-                          height: MediaQuery.of(context).size.height,
-                          width: MediaQuery.of(context).size.width,
-                          child: RTCVideoView(webRTCClient.remoteRenderer),
-                        )),
-                !eglRenderInitialized
-                    ? SizedBox.shrink()
-                    : Align(
-                        alignment: Alignment.topRight,
-                        child: Container(
-                          width: 90,
-                          height: 120,
-                          child: RTCVideoView(
-                            webRTCClient.localRenderer,
-                            mirror: true,
-                          ),
-                        ))
-              ],
+      child: WillPopScope(
+        onWillPop: () async{
+          hangUp(true);
+          return true;
+        },
+        child: Column(
+          children: [
+            Expanded(
+              child: Stack(
+                children: [
+                  !connected
+                      ? SizedBox.shrink()
+                      : Align(
+                          alignment: Alignment.center,
+                          child: Container(
+                            height: MediaQuery.of(context).size.height,
+                            width: MediaQuery.of(context).size.width,
+                            child: RTCVideoView(webRTCClient.remoteRenderer),
+                          )),
+                  !eglRenderInitialized
+                      ? SizedBox.shrink()
+                      : Align(
+                          alignment: Alignment.topRight,
+                          child: Container(
+                            width: 90,
+                            height: 120,
+                            child: RTCVideoView(
+                              webRTCClient.localRenderer,
+                              mirror: true,
+                            ),
+                          ))
+                ],
+              ),
             ),
-          ),
-          Container(
-            alignment: Alignment.center,
-            height: 100,
-            padding: EdgeInsets.symmetric(horizontal: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                FloatingActionButton(
-                  heroTag: 'alterMic',
-                  onPressed: () {
-                    alterMic();
-                  },
-                  child: micEnabled ? Icon(Icons.mic) : Icon(Icons.mic_off),
-                ),
-                FloatingActionButton(
-                  heroTag: 'hangUp',
-                  onPressed: () {
-                    hangUp(true);
-                  },
-                  backgroundColor: Colors.pink,
-                  child: Icon(Icons.call_end),
-                ),
-                FloatingActionButton(
-                  heroTag: 'switchCamera',
-                  onPressed: () {
-                    switchCamera();
-                  },
-                  child: Icon(Icons.switch_camera),
-                ),
-              ],
+            Container(
+              alignment: Alignment.center,
+              height: 100,
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  FloatingActionButton(
+                    heroTag: 'alterMic',
+                    onPressed: () {
+                      alterMic();
+                    },
+                    child: micEnabled ? Icon(Icons.mic) : Icon(Icons.mic_off),
+                  ),
+                  FloatingActionButton(
+                    heroTag: 'hangUp',
+                    onPressed: () {
+                      hangUp(true);
+                    },
+                    backgroundColor: Colors.pink,
+                    child: Icon(Icons.call_end),
+                  ),
+                  FloatingActionButton(
+                    heroTag: 'switchCamera',
+                    onPressed: () {
+                      switchCamera();
+                    },
+                    child: Icon(Icons.switch_camera),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
