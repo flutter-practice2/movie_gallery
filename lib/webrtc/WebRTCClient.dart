@@ -30,6 +30,7 @@ class WebRTCClient {
       {'url': 'stun:socialme.hopto.org:3478'},
     ],
     // 'sdpSemantics': 'unified-plan'  //default
+    'sdpSemantics': 'plan-b'
   };
 
   final Map<String, dynamic> pcConstraints = {
@@ -67,17 +68,9 @@ class WebRTCClient {
     _localRenderer.srcObject = localStream;
 
     peerConnection = await createPeerConnection(pcConfiguration, pcConstraints);
-    for (var track in localStream.getTracks()) {
-      await peerConnection.addTrack(track, localStream);
-    }
 
-    peerConnection.onTrack = (event) {
-      if (event.track.kind == 'video') {
-        print('webrtc_onTrack:$event');
-        _remoteRenderer.srcObject = event.streams[0];
-        signalUiCallback.call(UiEventType.RTC_STARTED);
-      }
-    };
+    // await unifiedPlan();
+    await planB();
 
     peerConnection.onIceCandidate = (candidate) {
       print('webrtc_onIceCandidate:$candidate');
@@ -90,6 +83,28 @@ class WebRTCClient {
 
     };
 
+  }
+
+  Future planB() async{
+   await  peerConnection.addStream(localStream);
+    peerConnection.onAddStream=(stream) {
+      print('webrtc_onAddStream:$stream');
+      _remoteRenderer.srcObject=stream;
+      signalUiCallback.call(UiEventType.RTC_STARTED);
+    };
+  }
+
+  Future<void> unifiedPlan() async {
+     for (var track in localStream.getTracks()) {
+      await peerConnection.addTrack(track, localStream);
+    }
+    peerConnection.onTrack = (event) {
+      if (event.track.kind == 'video') {
+        print('webrtc_onTrack:$event');
+        _remoteRenderer.srcObject = event.streams[0];
+        signalUiCallback.call(UiEventType.RTC_STARTED);
+      }
+    };
   }
   void onSignalMessage(ChatPostMsg chatPostMsg) async {
     print('webrtc_onSignalMessage:$chatPostMsg');
