@@ -2,47 +2,47 @@ import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:movie_gallery/inject/injection.dart';
 import 'package:movie_gallery/webrtc/RoomType.dart';
-import 'package:movie_gallery/webrtc/WebRTCListener.dart';
+import 'package:movie_gallery/webrtc/UiEventType.dart';
 
+import '../../mqtt/ChatPostMsg.dart';
 import '../../webrtc/RoomClient.dart';
 import '../../webrtc/WebRTCClient.dart';
 
 class VideoWidget extends StatefulWidget {
-  int _loginId;
-  int _peerId;
+  int loginId;
+  int peerId;
   bool isCaller;
 
   VideoWidget(
-      {required int loginId, required int peerId, required bool isCaller})
-      : _loginId = loginId,
-        _peerId = peerId,
-        this.isCaller = isCaller;
+      {required this. loginId, required this. peerId, required this. isCaller})
+      ;
 
   @override
   State<VideoWidget> createState() => _VideoWidgetState(
-        loginId: _loginId,
-        peerId: _peerId,
+        loginId: loginId,
+        peerId: peerId,
       );
 }
 
 class _VideoWidgetState extends State<VideoWidget> {
-  int _loginId;
-  int _peerId;
+  int loginId;
+  int peerId;
   late WebRTCClient webRTCClient;
   RoomClient roomClient = getIt<RoomClient>();
 
   bool eglRenderInitialized = false;
-  bool isConnected = false;
+  bool connected = false;
   bool micEnabled = true;
 
   _VideoWidgetState({
-    required int loginId,
-    required int peerId,
-  })  : _loginId = loginId,
-        _peerId = peerId {
-    webRTCClient = WebRTCClient(loginId: _loginId, peerId: _peerId);
+    required this. loginId,
+    required this.  peerId,
+  })   {
+    webRTCClient = WebRTCClient(
+        loginId: loginId,
+        peerId: peerId,
+        signalUiCallback: this.signalUiCallback);
     RoomClient.roomUiCallback = roomUiCallback;
-    WebRTCListener.onSignalMessage = webRTCClient.onSignalMessage;
   }
 
   @override
@@ -51,13 +51,9 @@ class _VideoWidgetState extends State<VideoWidget> {
 
     webRTCClient.init().then((value) {
       if (widget.isCaller) {
-        roomClient.sendInvite(_loginId, _peerId);
+        roomClient.sendInvite(loginId, peerId);
       } else {
-        setState(() {
-          print('webrtc_isConnected');
-          isConnected = true;
-        });
-        roomClient.sendAgree(_loginId, _peerId);
+        roomClient.sendAgree(loginId, peerId);
       }
       setState(() {
         eglRenderInitialized = true;
@@ -70,13 +66,7 @@ class _VideoWidgetState extends State<VideoWidget> {
     print('webrtc_roomUiCallback:$type');
     switch (type) {
       case RoomType.AGREE:
-        webRTCClient.start().then((value) {
-          setState(() {
-            print('webrtc_isConnected');
-            isConnected = true;
-          });
-        })
-        ;
+        webRTCClient.start();
 
         break;
       case RoomType.REJECT:
@@ -86,6 +76,17 @@ class _VideoWidgetState extends State<VideoWidget> {
         break;
       case RoomType.BYE:
         hangUp(false);
+        break;
+    }
+  }
+
+  void signalUiCallback(String event) {
+    switch(event){
+      case UiEventType.RTC_STARTED:
+        setState(() {
+          print('webrtc_isConnected');
+          this.connected=true;
+        });
         break;
     }
   }
@@ -103,14 +104,13 @@ class _VideoWidgetState extends State<VideoWidget> {
 
   void hangUp(bool isFromSelf) {
     if (isFromSelf) {
-      roomClient.sendBye(_loginId, _peerId);
+      roomClient.sendBye(loginId, peerId);
     }
     Navigator.pop(context);
     close();
   }
 
   void close() {
-    WebRTCListener.onSignalMessage = null;
     webRTCClient.dispose();
     RoomClient.roomUiCallback = null;
   }
@@ -129,7 +129,7 @@ class _VideoWidgetState extends State<VideoWidget> {
           Expanded(
             child: Stack(
               children: [
-                !isConnected
+                !connected
                     ? SizedBox.shrink()
                     : Align(
                         alignment: Alignment.center,

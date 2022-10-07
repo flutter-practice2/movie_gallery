@@ -4,8 +4,10 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:movie_gallery/mqtt/ChatPostMsg.dart';
 import 'package:movie_gallery/mqtt/MyMqttClient.dart';
 import 'package:movie_gallery/webrtc/SignalType.dart';
+import 'package:movie_gallery/webrtc/UiEventType.dart';
 
 import '../mqtt/MsgType.dart';
+import 'WebRTCListener.dart';
 
 class WebRTCClient {
   RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
@@ -27,22 +29,29 @@ class WebRTCClient {
     'iceServers': [
       {'url': 'stun:socialme.hopto.org:3478'},
     ],
-    'sdpSemantics': 'unified-plan'
+    // 'sdpSemantics': 'unified-plan'  //default
   };
 
   final Map<String, dynamic> pcConstraints = {
     'mandatory': {},
     'optional': [
-      {'DtlsSrtpKeyAgreement': true},
     ]
   };
 
-  int _loginId;
-  int _peerId;
+  int loginId;
+  int peerId;
   late RTCPeerConnection peerConnection;
   late MediaStream localStream;
-  Completer<bool> candidateCompleter = new Completer();
+  Function(String) signalUiCallback;
 
+  WebRTCClient({
+    required this. loginId,
+    required this. peerId,
+    required this.signalUiCallback
+  }) {
+    WebRTCListener.onSignalMessage = this.onSignalMessage;
+
+  }
   Future start() async {
     print('webrtc_start');
     await _sendOffer();
@@ -64,7 +73,9 @@ class WebRTCClient {
 
     peerConnection.onTrack = (event) {
       if (event.track.kind == 'video') {
+        print('webrtc_onTrack:$event');
         _remoteRenderer.srcObject = event.streams[0];
+        signalUiCallback.call(UiEventType.RTC_STARTED);
       }
     };
 
@@ -80,7 +91,6 @@ class WebRTCClient {
     };
 
   }
-
   void onSignalMessage(ChatPostMsg chatPostMsg) async {
     print('webrtc_onSignalMessage:$chatPostMsg');
     Map<String, dynamic> map = json.decode(chatPostMsg.content);
@@ -97,7 +107,7 @@ class WebRTCClient {
             RTCSessionDescription(data['sdp'], data['type']));
 
         break;
-      case SignalType.candidate:
+      case SignalType.ice_candidate:
         print('webrtc_receive_candidate');
         RTCIceCandidate candidate = RTCIceCandidate(
             data['candidate'], data['sdpMid'], data['sdpMLineIndex']);
@@ -127,8 +137,8 @@ class WebRTCClient {
     };
     ChatPostMsg chatPostMsg = ChatPostMsg(
         type: MsgType.SIGNAL,
-        uid: _loginId,
-        peerUid: _peerId,
+        uid: loginId,
+        peerUid: peerId,
         content: json.encode(answerMap));
     MyMqttClient.instance.publishMessage(chatPostMsg);
   }
@@ -137,7 +147,7 @@ class WebRTCClient {
     print('webrtc_sendIceCandidate_wait');
     // await candidateCompleter.future;
     Map<String, dynamic> iceMap = {
-      'type': SignalType.candidate,
+      'type': SignalType.ice_candidate,
       'data': {
         'sdpMLineIndex': candidate.sdpMLineIndex,
         'sdpMid': candidate.sdpMid,
@@ -146,8 +156,8 @@ class WebRTCClient {
     };
     ChatPostMsg chatPostMsg = ChatPostMsg(
         type: MsgType.SIGNAL,
-        uid: _loginId,
-        peerUid: _peerId,
+        uid: loginId,
+        peerUid: peerId,
         content: json.encode(iceMap));
     MyMqttClient.instance.publishMessage(chatPostMsg);
     print('webrtc_sendIceCandidate_done');
@@ -163,8 +173,8 @@ class WebRTCClient {
     };
     ChatPostMsg chatPostMsg = ChatPostMsg(
         type: MsgType.SIGNAL,
-        uid: _loginId,
-        peerUid: _peerId,
+        uid: loginId,
+        peerUid: peerId,
         content: json.encode(offerMap));
     MyMqttClient.instance.publishMessage(chatPostMsg);
   }
@@ -181,15 +191,13 @@ class WebRTCClient {
     _remoteRenderer.dispose();
     _localRenderer.dispose();
     peerConnection.dispose();
+
+    WebRTCListener.onSignalMessage =null;
   }
 
   RTCVideoRenderer get localRenderer => _localRenderer;
 
   RTCVideoRenderer get remoteRenderer => _remoteRenderer;
 
-  WebRTCClient({
-    required int loginId,
-    required int peerId,
-  })  : _loginId = loginId,
-        _peerId = peerId;
+
 }
