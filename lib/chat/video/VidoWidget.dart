@@ -4,7 +4,6 @@ import 'package:movie_gallery/inject/injection.dart';
 import 'package:movie_gallery/webrtc/RoomType.dart';
 import 'package:movie_gallery/webrtc/UiEventType.dart';
 
-import '../../mqtt/ChatPostMsg.dart';
 import '../../webrtc/RoomClient.dart';
 import '../../webrtc/WebRTCClient.dart';
 
@@ -14,8 +13,7 @@ class VideoWidget extends StatefulWidget {
   bool isCaller;
 
   VideoWidget(
-      {required this. loginId, required this. peerId, required this. isCaller})
-      ;
+      {required this.loginId, required this.peerId, required this.isCaller});
 
   @override
   State<VideoWidget> createState() => _VideoWidgetState(
@@ -35,9 +33,9 @@ class _VideoWidgetState extends State<VideoWidget> {
   bool micEnabled = true;
 
   _VideoWidgetState({
-    required this. loginId,
-    required this.  peerId,
-  })   {
+    required this.loginId,
+    required this.peerId,
+  }) {
     webRTCClient = WebRTCClient(
         loginId: loginId,
         peerId: peerId,
@@ -81,11 +79,11 @@ class _VideoWidgetState extends State<VideoWidget> {
   }
 
   void signalUiCallback(String event) {
-    switch(event){
+    switch (event) {
       case UiEventType.RTC_STARTED:
         setState(() {
           print('webrtc_isConnected');
-          this.connected=true;
+          this.connected = true;
         });
         break;
     }
@@ -109,7 +107,6 @@ class _VideoWidgetState extends State<VideoWidget> {
     Navigator.pop(context);
   }
 
-
   @override
   void dispose() {
     webRTCClient.dispose();
@@ -117,11 +114,15 @@ class _VideoWidgetState extends State<VideoWidget> {
     super.dispose();
   }
 
+  GlobalKey _parentKey = GlobalKey();
+  double xPosition = -1;
+  double yPosition = -1;
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: WillPopScope(
-        onWillPop: () async{
+        onWillPop: () async {
           hangUp(true);
           return true;
         },
@@ -129,6 +130,7 @@ class _VideoWidgetState extends State<VideoWidget> {
           children: [
             Expanded(
               child: Stack(
+                key: _parentKey,
                 children: [
                   !connected
                       ? SizedBox.shrink()
@@ -141,14 +143,25 @@ class _VideoWidgetState extends State<VideoWidget> {
                           )),
                   !eglRenderInitialized
                       ? SizedBox.shrink()
-                      : Align(
-                          alignment: Alignment.topRight,
-                          child: Container(
-                            width: 90,
-                            height: 120,
-                            child: RTCVideoView(
-                              webRTCClient.localRenderer,
-                              mirror: true,
+                      : Positioned(
+                          top: yPosition != -1 ? yPosition : 0,
+                          left: xPosition != -1
+                              ? xPosition
+                              : xPosition=MediaQuery.of(context).size.width - 90,
+                          child: GestureDetector(
+                            onPanUpdate: (tapInfo) {
+                              setState(() {
+                                xPosition+=tapInfo.delta.dx;
+                                yPosition+=tapInfo.delta.dy;
+                              });
+                            },
+                            child: Container(
+                              width: 90,
+                              height: 120,
+                              child: RTCVideoView(
+                                webRTCClient.localRenderer,
+                                mirror: true,
+                              ),
                             ),
                           ))
                 ],

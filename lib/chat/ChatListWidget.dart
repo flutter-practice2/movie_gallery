@@ -30,45 +30,50 @@ class _ChatListWidgeState extends State<ChatListWidge> {
   @override
   Widget build(BuildContext context) {
    return SafeArea(
-     child: PagedListView(
-        pagingController: pagingController,
-        builderDelegate: PagedChildBuilderDelegate<ChatView>(itemBuilder: (context, item, index) {
-          return Slidable(
-            endActionPane: ActionPane(
-              motion: DrawerMotion(),
-              children: [
-                SlidableAction(
-                  onPressed: (context) {
-                    chatRepository.delete(item.id).then((value) {
-                      pagingController.itemList;
-                      setState(() {
-                        pagingController.refresh();
+     child: RefreshIndicator(
+       onRefresh:  () async{
+         pagingController.refresh();
+       },
+       child: PagedListView(
+          pagingController: pagingController,
+          builderDelegate: PagedChildBuilderDelegate<ChatView>(itemBuilder: (context, item, index) {
+            return Slidable(
+              endActionPane: ActionPane(
+                motion: DrawerMotion(),
+                children: [
+                  SlidableAction(
+                    onPressed: (context) {
+                      chatRepository.delete(item.id).then((value) {
+                        pagingController.itemList;
+                        setState(() {
+                          pagingController.refresh();
+                        });
                       });
-                    });
-                  },
-                  icon: Icons.delete,
-                )
-              ],
-            ),
-            child: Padding(
-              padding: EdgeInsets.only(top: 8, left: 8),
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                        // ChatDetailWidget(item.id),
-                        ChatDetailWidget(item.id),
-                      ));
-                },
-                child: this.buildChatTile(item, context),
+                    },
+                    icon: Icons.delete,
+                  )
+                ],
               ),
-            ),
-          );
-        },),
-      ),
+              child: Padding(
+                padding: EdgeInsets.only(top: 8, left: 8),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                          // ChatDetailWidget(item.id),
+                          ChatDetailWidget(item.id),
+                        ));
+                  },
+                  child: this.buildChatTile(item, context),
+                ),
+              ),
+            );
+          },),
+        ),
+     ),
    );
   }
 

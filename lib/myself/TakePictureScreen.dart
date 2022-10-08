@@ -1,7 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import 'DisplayPictureScreen.dart';
 
@@ -61,7 +60,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             await _initializeControllerFuture;
             XFile image = await cameraController.takePicture();
             if (!mounted) return;
-            GoRouter.of(context).go('/DisplayPictureScreen?imagePath=${image.path}');
+            Navigator.push(context, MaterialPageRoute(builder: (context) => DisplayPictureScreen(image.path),));
 
           },
           child: Icon(Icons.camera_alt),

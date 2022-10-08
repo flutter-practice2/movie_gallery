@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:movie_gallery/http/MyClient.dart';
 import 'package:movie_gallery/inject/injection.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -66,7 +65,7 @@ class _MyselfWidgetState extends State<MyselfWidget> {
 
                         ),
                   Padding(padding: EdgeInsets.all(8),
-                  child: 
+                  child:
                     Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,13 +83,13 @@ class _MyselfWidgetState extends State<MyselfWidget> {
                     width: double.infinity,
                     alignment: Alignment.center,
                     child: FloatingActionButton(onPressed: () async {
-                      GoRouter.of(context).go('/TakePictureScreen');
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => TakePictureScreen(),));
                     },
                       child: Icon(Icons.camera_alt,),
                     ),
 
                   )
-              
+
                 ],
               ),
       ),
