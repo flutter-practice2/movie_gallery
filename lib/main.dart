@@ -1,24 +1,19 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
-import 'package:movie_gallery/Constants.dart';
-import 'package:movie_gallery/util/ContextUtil.dart';
+import 'package:movie_gallery/app_theme.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'HomePage.dart';
-import 'chat/MessageReceivedNotifier.dart';
-import 'login/LoginNotifier.dart';
-import 'login/LoginWidget.dart';
+import 'AppEnvironment.dart';
 import 'http/MyClient.dart';
 import 'inject/injection.dart';
-import 'myself/MyselfWidget.dart';
-import 'myself/TakePictureScreen.dart';
-import 'nearby/NearbyDetailWidget.dart';
+import 'login/LoginNotifier.dart';
 import 'router.dart';
 void main() async{
+  await dotenv.load(fileName: AppEnvironment.envFile);
+
   _setupLogging();
   HttpOverrides.global = MyHttpOverrides();
 
@@ -47,7 +42,6 @@ class MyHttpOverrides extends HttpOverrides {
 class MyApp extends StatelessWidget {
   MyClient myClient=getIt<MyClient>();
   LoginNotifier loginNotifier=getIt<LoginNotifier>();
-  MessageReceivedNotifier messageReceivedNotifier=getIt<MessageReceivedNotifier>();
 
   MyApp({super.key});
 
@@ -60,9 +54,9 @@ class MyApp extends StatelessWidget {
           lazy: true,
         ),
         ChangeNotifierProvider(create: (context) => loginNotifier,),
-        ChangeNotifierProvider(create: (context) => messageReceivedNotifier,)
       ],
       child: MaterialApp.router(
+        theme: AppTheme.themeData(),
         routerConfig: router,
         debugShowCheckedModeBanner:false,
 

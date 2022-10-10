@@ -8,9 +8,9 @@ import 'package:movie_gallery/repository/view/ChatView.dart';
 @singleton
 class ChatRepository {
   ChatDao chatDao;
+  ChatMessageDao chatMessageDao;
 
-  ChatRepository(this.chatDao);
-
+  ChatRepository(this.chatDao, this.chatMessageDao);
 
   Future<List<ChatView>> findAll() {
     return chatDao.findAll();
@@ -20,8 +20,8 @@ class ChatRepository {
     return chatDao.insert(entity);
   }
 
-  Future<void> delete(int id) {
+  Future<void> delete(int id) async {
+    await chatMessageDao.delete(id);
     return chatDao.delete(id);
-
   }
 }

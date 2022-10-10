@@ -1,5 +1,6 @@
 import 'package:floor/floor.dart';
 import 'package:injectable/injectable.dart';
+
 import '../db/AppDatabase.dart';
 import '../entity/entity.dart';
 
@@ -21,5 +22,8 @@ abstract class ChatMessageDao {
 
   @Query('select * from chat_message where chatId=:chatId and id>=:startId ')
   Future<List<ChatMessageEntity>> findNewItems(int chatId,int startId) ;
+
+  @Query('delete from chat_message where chatId=:chatId')
+  Future<void> delete(int chatId);
 
 }

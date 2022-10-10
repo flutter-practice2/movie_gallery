@@ -20,4 +20,12 @@ class ChatView {
   String toString() {
     return '{id: $id, unread: $unread, nickname: $nickname, avatar: $avatar}';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ChatView && runtimeType == other.runtimeType && id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
 }

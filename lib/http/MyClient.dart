@@ -1,7 +1,8 @@
 import 'package:chopper/chopper.dart';
 import 'package:injectable/injectable.dart';
-
+import 'package:movie_gallery/AppEnvironment.dart';
 import 'package:movie_gallery/http/model/export.dart';
+
 import 'converter.dart';
 import 'model/UserRegisterRequest.dart';
 
@@ -13,7 +14,7 @@ abstract class MyClient extends ChopperService {
   @factoryMethod
   static MyClient create() {
     ChopperClient chopperClient = new ChopperClient(
-        baseUrl: 'https://socialme.hopto.org/api',
+        baseUrl: AppEnvironment.apiBaseUrl,
         interceptors: [HttpLoggingInterceptor()],
         // converter: MyConverter(),
         converter: converter,

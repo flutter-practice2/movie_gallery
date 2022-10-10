@@ -1,6 +1,6 @@
 import 'package:floor/floor.dart';
 
-@Entity(tableName: 'chat_message')
+@Entity(tableName: 'chat_message',indices: [Index(value: ['chatId','id'])])
 class ChatMessageEntity{
   @PrimaryKey(autoGenerate: true)
   int? id;

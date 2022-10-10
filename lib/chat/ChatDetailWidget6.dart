@@ -37,7 +37,6 @@ class ChatDetailWidgetState extends State<ChatDetailWidget> {
   bool loaded = false;
   late UserEntity peerUser;
   late UserEntity loginUser;
-  late Stream<List<ChatMessageEntity>> stream;
   ScrollController scrollController = ScrollController();
 
   PagingController<int, ChatMessageEntity> pagingController = PagingController(
@@ -65,7 +64,6 @@ class ChatDetailWidgetState extends State<ChatDetailWidget> {
         .findById(loginId)
         .then((value) => loginUser = value!)
         .then((value) {
-      stream = chatMessageRepository.findByChatId(peerId);
 
       pagingController.addPageRequestListener((pageKey) async {
         int perPage = Constants.DB_PER_PAGE;
@@ -199,7 +197,6 @@ class ChatDetailWidgetState extends State<ChatDetailWidget> {
   }
 
   void prependFromDb() {
-    if (dbLargeId < 0) return;
     chatMessageRepository
         .findNewItems(this.peerId, dbLargeId + 1)
         .then((List<ChatMessageEntity> items) {

@@ -16,65 +16,75 @@ class ChatListWidge extends StatefulWidget {
 
 class _ChatListWidgeState extends State<ChatListWidge> {
   ChatRepository chatRepository = getIt<ChatRepository>();
-  PagingController<int,ChatView> pagingController=PagingController(firstPageKey: Constants.DB_START_PAGE);
+  PagingController<int, ChatView> pagingController =
+      PagingController(firstPageKey: Constants.DB_START_PAGE);
 
   @override
   void initState() {
     super.initState();
-    pagingController.addPageRequestListener((pageKey)async {
-      List<ChatView> page= await chatRepository.findAll();
+    pagingController.addPageRequestListener((pageKey) async {
+      List<ChatView> page = await chatRepository.findAll();
       pagingController.appendLastPage(page);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-   return SafeArea(
-     child: RefreshIndicator(
-       onRefresh:  () async{
-         pagingController.refresh();
-       },
-       child: PagedListView(
-          pagingController: pagingController,
-          builderDelegate: PagedChildBuilderDelegate<ChatView>(itemBuilder: (context, item, index) {
-            return Slidable(
-              endActionPane: ActionPane(
-                motion: DrawerMotion(),
-                children: [
-                  SlidableAction(
-                    onPressed: (context) {
-                      chatRepository.delete(item.id).then((value) {
-                        pagingController.itemList;
-                        setState(() {
-                          pagingController.refresh();
-                        });
-                      });
-                    },
-                    icon: Icons.delete,
-                  )
-                ],
-              ),
-              child: Padding(
-                padding: EdgeInsets.only(top: 8, left: 8),
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                          // ChatDetailWidget(item.id),
-                          ChatDetailWidget(item.id),
-                        ));
-                  },
-                  child: this.buildChatTile(item, context),
-                ),
-              ),
-            );
-          },),
+    return SafeArea(
+      child: RefreshIndicator(
+        onRefresh: () async {
+          pagingController.refresh();
+        },
+        child: buildPage(),
+      ),
+    );
+  }
+
+  PagedListView<int, ChatView> buildPage() {
+    return PagedListView(
+      pagingController: pagingController,
+      builderDelegate: PagedChildBuilderDelegate<ChatView>(
+        itemBuilder: (context, item, index) {
+          return buildSlidableTile(item, context);
+        },
+      ),
+    );
+  }
+
+  Slidable buildSlidableTile(ChatView item, BuildContext context) {
+    return Slidable(
+      endActionPane: ActionPane(
+        motion: DrawerMotion(),
+        children: [
+          SlidableAction(
+            onPressed: (context) {
+              chatRepository.delete(item.id).then((value) {
+                setState(() {
+                  pagingController.itemList!.remove(item);
+                });
+              });
+            },
+            icon: Icons.delete,
+          )
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(top: 8, left: 8),
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      // ChatDetailWidget(item.id),
+                      ChatDetailWidget(item.id),
+                ));
+          },
+          child: this.buildChatTile(item, context),
         ),
-     ),
-   );
+      ),
+    );
   }
 
   Row buildChatTile(ChatView item, BuildContext context) {

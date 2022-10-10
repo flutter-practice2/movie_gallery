@@ -91,7 +91,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE TABLE IF NOT EXISTS `chat` (`id` INTEGER NOT NULL, `unread` INTEGER, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `user` (`uid` INTEGER NOT NULL, `nickname` TEXT, `avatar` TEXT, PRIMARY KEY (`uid`))');
-
+        await database.execute(
+            'CREATE INDEX `index_chat_message_chatId_id` ON `chat_message` (`chatId`, `id`)');
         await database.execute(
             'CREATE VIEW IF NOT EXISTS `chat_view` AS select c.id,c.unread,u.nickname,u.avatar  from chat c inner join user u on c.id=u.uid');
 
@@ -213,6 +214,13 @@ class _$ChatMessageDao extends ChatMessageDao {
             uid: row['uid'] as int,
             message: row['message'] as String),
         arguments: [chatId, startId]);
+  }
+
+  @override
+  Future<void> delete(int chatId) async {
+    await _queryAdapter.queryNoReturn(
+        'delete from chat_message where chatId=?1',
+        arguments: [chatId]);
   }
 
   @override
