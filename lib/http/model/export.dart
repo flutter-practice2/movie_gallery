@@ -1,9 +1,10 @@
-export './UserGeoLocationSearchNearbyResponse.dart';
-export '../../Constants.dart';
-export './User.dart';
-export './UserGeoLocationAddLocationRequest.dart';
-export './UserGetDetailResponse.dart';
-export './RequestTokenResponse.dart';
-export './UserUpdateAvatarRequest.dart';
+export './ErrorReportPostRequest.dart';
 export './FriendListResponse.dart';
 export './FriendsAddRequest.dart';
+export './RequestTokenResponse.dart';
+export './User.dart';
+export './UserGeoLocationAddLocationRequest.dart';
+export './UserGeoLocationSearchNearbyResponse.dart';
+export './UserGetDetailResponse.dart';
+export './UserUpdateAvatarRequest.dart';
+export '../../Constants.dart';

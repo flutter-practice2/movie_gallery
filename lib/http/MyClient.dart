@@ -55,6 +55,9 @@ abstract class MyClient extends ChopperService {
 
   @Get(path: '/Friends/isFriend')
   Future<Response<bool>> isFriend(@Query() int selfUid, @Query() int uid);
+
+  @Post(path:'/errorReport/post')
+  Future<Response> errorReportPost(@Body() ErrorReportPostRequest request);
 }
 
 void main() async {

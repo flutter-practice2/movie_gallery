@@ -1,7 +1,7 @@
 
 
 import 'package:flutter/material.dart';
-//centralized them
+//centralized theme
 class AppTheme{
 
   static ThemeData themeData(){

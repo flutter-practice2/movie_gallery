@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
+import 'package:movie_gallery/AppErrorHandler.dart';
 import 'package:movie_gallery/app_theme.dart';
 import 'package:provider/provider.dart';
 
@@ -20,8 +21,12 @@ void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await configureDependencies();
 
+  AppErrorHandler(). registerErrorHandler();
+
   runApp(new MyApp());
 }
+
+
 
 void _setupLogging() {
   Logger.root.level = Level.ALL;

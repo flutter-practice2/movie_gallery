@@ -102,4 +102,12 @@ class _$MyClient extends MyClient {
     final $request = Request('GET', $url, client.baseUrl, parameters: $params);
     return client.send<bool, bool>($request);
   }
+
+  @override
+  Future<Response<dynamic>> errorReportPost(ErrorReportPostRequest request) {
+    final $url = '/errorReport/post';
+    final $body = request;
+    final $request = Request('POST', $url, client.baseUrl, body: $body);
+    return client.send<dynamic, dynamic>($request);
+  }
 }
