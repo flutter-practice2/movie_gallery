@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:movie_gallery/AppOtaUpdater.dart';
 import 'package:movie_gallery/http/MyClient.dart';
 import 'package:movie_gallery/inject/injection.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -88,6 +89,18 @@ class _MyselfWidgetState extends State<MyselfWidget> {
                       child: Icon(Icons.camera_alt,),
                     ),
 
+                  ),
+                  SizedBox(height: 20,),
+                  Container(
+                    alignment: Alignment.bottomRight,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) {
+                          return AppOtaUpdater();
+                        },));
+                      },
+                      child: Text('update'),
+                    ),
                   )
 
                 ],

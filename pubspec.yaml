@@ -42,7 +42,6 @@ dependencies:
   infinite_scroll_pagination: ^3.2.0
   injectable: ^1.5.3
   shared_preferences: ^2.0.15
-  retrofit: '>=3.0.0 <4.0.0'
   camera: ^0.10.0+1
   path_provider: ^2.0.11
   path: ^1.8.2
@@ -57,6 +56,7 @@ dependencies:
   paging_view: ^0.0.2
   flutter_webrtc: ^0.9.8
   flutter_dotenv: ^5.0.2
+  ota_update: ^4.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -65,7 +65,6 @@ dev_dependencies:
   chopper_generator: 5.0.0
   json_serializable: 6.3.1  # actually is a generator
   injectable_generator: ^1.5.4
-  retrofit_generator: '>=4.0.0 <5.0.0'
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
