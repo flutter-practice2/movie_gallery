@@ -1,35 +1,25 @@
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:movie_gallery/widget/Avatar.dart';
 
 import '../http/model/UserGeoLocationSearchNearbyResponse.dart';
 
-class NearbyListItem extends StatelessWidget{
-
+class NearbyListItemWidget extends StatelessWidget {
   UserLocationProjection item;
 
-
-  NearbyListItem(this.item);
+  NearbyListItemWidget(this.item);
 
   @override
   Widget build(BuildContext context) {
-    return  Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        //avatar
-        item.avatar != null && item.avatar!.isNotEmpty
-            ? CachedNetworkImage(
-          imageUrl: item.avatar ?? '',
-          width: 100,
-          height: 100,
-        )
-            : Container(
-          width: 100,
-          height: 100,
-          child: Icon(Icons.person),
+        Avatar(item.avatar, 100, 100),
+        Text(
+          item.nickname ?? '',
+          style: Theme.of(context).textTheme.bodyText1,
         ),
-        Text(item.nickname ?? '',style: Theme.of(context).textTheme.bodyText1,),
         SizedBox(
           width: 10,
         ),
@@ -37,10 +27,7 @@ class NearbyListItem extends StatelessWidget{
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(item.distance != null
-                  ? (item.distance! / 1000).toStringAsFixed(1) +
-                  ' km'
-                  : '',style: Theme.of(context).textTheme.bodyText1,),
+              buildDistanceText(context),
               SizedBox(
                 width: 8,
               )
@@ -48,6 +35,15 @@ class NearbyListItem extends StatelessWidget{
           ),
         )
       ],
+    );
+  }
+
+  Text buildDistanceText(BuildContext context) {
+    return Text(
+      item.distance != null
+          ? (item.distance! / 1000).toStringAsFixed(1) + ' km'
+          : '',
+      style: Theme.of(context).textTheme.bodyText1,
     );
   }
 }

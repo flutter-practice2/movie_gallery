@@ -47,14 +47,7 @@ class _NearbyListState extends State<NearbyList> {
   Widget build(BuildContext context) {
     print('rebuild_test_trace ${test_count++}');
     return SafeArea(
-      child: Container(
-          child: Column(
-        children: [
-          Expanded(
-            child: buildPageWidget(context),
-          )
-        ],
-      )),
+      child: Container(child: buildPageWidget(context)),
     );
   }
 
@@ -107,7 +100,7 @@ class _NearbyListState extends State<NearbyList> {
                         },
                       ));
                     },
-                    child: NearbyListItem(item),
+                    child: NearbyListItemWidget(item),
                   ),
                 );
               },
