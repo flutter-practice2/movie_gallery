@@ -170,11 +170,11 @@ class _NearbyListState extends State<NearbyList> {
 
     if (!locationServiceEnabled) {
       return Future.error(
-          LocationDisabledException('Location services are disabled.'));
+          LocationDisabledException('Location services are disabled'));
     }
     var locationPermission = await Geolocator.checkPermission();
     if (locationPermission == LocationPermission.denied) {
-      await Geolocator.requestPermission();
+      locationPermission =    await Geolocator.requestPermission();
       if (locationPermission == LocationPermission.denied) {
         return Future.error(
             LocationRejectedException('Location permissions are denied'));
@@ -183,7 +183,7 @@ class _NearbyListState extends State<NearbyList> {
 
     if (locationPermission == LocationPermission.deniedForever) {
       return Future.error(LocationRejectedException(
-          'Location permissions are permanently denied, we cannot request permissions.'));
+          'Location permissions are permanently denied, we cannot request permissions'));
     }
 
     Geolocator.getPositionStream(

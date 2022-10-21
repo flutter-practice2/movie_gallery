@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:movie_gallery/chat/video/VidoWidget.dart';
 import 'package:movie_gallery/inject/injection.dart';
 import 'package:movie_gallery/repository/entity/ChatMessageEntity.dart';
+
+import './ChatDetailWidget6.dart';
 import '../mqtt/ChatPostMsg.dart';
 import '../mqtt/MsgType.dart';
 import '../mqtt/MyMqttClient.dart';
 import '../repository/ChatMessageRepository.dart';
-import './ChatDetailWidget6.dart';
 
 class ImeWidget extends StatefulWidget {
   ChatDetailWidgetState state;

@@ -11,7 +11,7 @@ import 'package:movie_gallery/widget/Avatar.dart';
 import '../mqtt/MyMqttClient.dart';
 import '../repository/ChatMessageRepository.dart';
 import '../repository/UserRepository.dart';
-import 'ImeWidget6.dart';
+import 'ImeWidget.dart';
 
 /**
  * use indexOffset to compensate to stick page if not at bottom while new item inserted to db,
