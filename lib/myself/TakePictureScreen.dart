@@ -1,5 +1,4 @@
 import 'package:camera/camera.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'DisplayPictureScreen.dart';
@@ -24,7 +23,23 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     availableCameras().then((List<CameraDescription> cameras) {
       camera = cameras.first;
       cameraController = CameraController(camera, ResolutionPreset.medium);
-      _initializeControllerFuture = cameraController.initialize();
+      try {
+        _initializeControllerFuture = cameraController.initialize();
+      } catch (e) {
+        if (e is CameraException) {
+          switch (e.code) {
+            case 'CameraAccessDenied':
+              print('User denied camera access.');
+              break;
+            default:
+              print('Handle other errors.');
+              break;
+          }
+          Navigator.pop(context);
+          return;
+        }
+        print(e);
+      }
 
       setState(() {
         loaded = true;
@@ -34,8 +49,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
   @override
   void dispose() {
-    super.dispose();
     cameraController.dispose();
+    super.dispose();
   }
 
   @override
@@ -57,7 +72,6 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         alignment: Alignment.bottomCenter,
         child: FloatingActionButton(
           onPressed: () async {
-            await _initializeControllerFuture;
             XFile image = await cameraController.takePicture();
             if (!mounted) return;
             Navigator.push(context, MaterialPageRoute(builder: (context) => DisplayPictureScreen(image.path),));
