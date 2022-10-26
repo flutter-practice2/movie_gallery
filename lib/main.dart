@@ -61,10 +61,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => loginNotifier,),
       ],
       child: MaterialApp.router(
-        theme: AppTheme.themeData(),
+        theme: AppTheme.theme,
         routerConfig: router,
-        debugShowCheckedModeBanner:false,
-
+        debugShowCheckedModeBanner: false,
       ),
     );
   }
