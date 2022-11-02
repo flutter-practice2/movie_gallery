@@ -190,7 +190,7 @@ class _NearbyListState extends State<NearbyList> {
     });
 
     print('get_location');
-    return Geolocator.getLastKnownPosition(forceAndroidLocationManager: true);
+    return Geolocator.getCurrentPosition();
   }
 
   void setPosition(Position position) {
